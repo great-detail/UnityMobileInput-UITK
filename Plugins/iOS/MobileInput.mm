@@ -13,6 +13,7 @@
 
 #define CREATE @"CREATE_EDIT"
 #define REMOVE @"REMOVE_EDIT"
+#define SET_PLACEHOLDER @"SET_PLACEHOLDER"
 #define SET_TEXT @"SET_TEXT"
 #define SET_RECT @"SET_RECT"
 #define ON_FOCUS @"ON_FOCUS"
@@ -173,6 +174,7 @@ NSString *plugin;
 
 @implementation MobileInput
 
+
 + (void)init:(UIViewController *)viewController {
     mainViewController = viewController;
     mobileInputList = [[NSMutableDictionary alloc] init];
@@ -232,6 +234,9 @@ NSString *plugin;
     } else if ([msg isEqualToString:SET_TEXT]) {
         NSString *text = [data valueForKey:@"text"];
         [self setText:text];
+    } else if ([msg isEqualToString:SET_PLACEHOLDER]) {
+        NSString *text = [data valueForKey:@"placeholder"];
+        [self setPlaceholder:text];
     } else if ([msg isEqualToString:SET_RECT]) {
         [self setRect:data];
     } else if ([msg isEqualToString:SET_FOCUS]) {
@@ -453,7 +458,7 @@ BOOL multiline;
         }
         NSMutableParagraphStyle *setting = [[NSMutableParagraphStyle alloc] init];
         setting.alignment = textAlign;
-        textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{NSForegroundColorAttributeName: placeHolderColor, NSParagraphStyleAttributeName : setting}];        
+        textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{NSForegroundColorAttributeName: placeHolderColor, NSParagraphStyleAttributeName : setting}];
         textField.delegate = self;
         if (keyType == UIKeyboardTypeEmailAddress) {
             textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -478,6 +483,16 @@ BOOL multiline;
         [((UITextField *) editView) setText:text];
     } else if ([editView isKindOfClass:[UITextView class]]) {
         [((UITextView *) editView) setText:text];
+    }
+}
+
+- (void)setPlaceholder:(NSString *)placeholder {
+    if ([editView isKindOfClass:[UITextField class]]) {
+        NSMutableAttributedString *ns = [[NSMutableAttributedString alloc] initWithAttributedString:[((UITextField *) editView) attributedPlaceholder]];
+        [[ns mutableString] setString:placeholder];
+        ((UITextField *) editView).attributedPlaceholder = ns;
+    } else if ([editView isKindOfClass:[PlaceholderTextView class]]) {
+        [((PlaceholderTextView *) editView) setPlaceholder:placeholder];
     }
 }
 

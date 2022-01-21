@@ -12,7 +12,6 @@ import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -32,6 +31,7 @@ public class MobileInput {
     private static final String CREATE = "CREATE_EDIT";
     private static final String REMOVE = "REMOVE_EDIT";
     private static final String SET_TEXT = "SET_TEXT";
+    private static final String SET_PLACEHOLDER = "SET_PLACEHOLDER";
     private static final String SET_RECT = "SET_RECT";
     private static final String SET_FOCUS = "SET_FOCUS";
     private static final String ON_FOCUS = "ON_FOCUS";
@@ -89,6 +89,9 @@ public class MobileInput {
                     String text = data.getString("text");
                     this.SetText(text);
                     break;
+                case SET_PLACEHOLDER:
+                    String placeholder = data.getString("placeholder");
+                    this.SetPlaceholder(placeholder);
                 case SET_RECT:
                     this.SetRect(data);
                     break;
@@ -220,7 +223,7 @@ public class MobileInput {
                             editInputType |= InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
                             break;
                         case "Password":
-                            if (keyboardType != "NumbersAndPunctuation" && keyboardType != "NumberPad" && keyboardType != "PhonePad") {
+                            if (!keyboardType.equals("NumbersAndPunctuation") && !keyboardType.equals("NumberPad") && !keyboardType.equals("PhonePad")) {
                                 editInputType |= InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
                             } else {
                                 editInputType |= InputType.TYPE_NUMBER_VARIATION_PASSWORD;
@@ -389,6 +392,14 @@ public class MobileInput {
             return "";
         }
     }
+
+    // Set new text
+    private void SetPlaceholder(String newPlaceholder) {
+        if (edit != null) {
+            edit.setHint(newPlaceholder);
+        }
+    }
+
 
     // Get focused state
     private boolean isFocused() {

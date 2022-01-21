@@ -164,7 +164,7 @@ namespace Mopsicus.Plugins {
         /// Callback on data
         /// </summary>
         public void OnData (JsonObject data) {
-            Debug.Log (string.Format ("{0} plugin OnData: {1}", GetType ().Name, data.ToJsonPrettyPrintString ()));
+            //Debug.Log (string.Format ("{0} plugin OnData: {1}", GetType ().Name, data.ToJsonPrettyPrintString ()));
             _data = data;
             try {
                 JsonObject response = (JsonObject) JsonNode.ParseJsonString (data["data"]);
@@ -240,7 +240,7 @@ namespace Mopsicus.Plugins {
             data["id"] = id;
             string json = data.ToJsonString ();
 #if UNITY_EDITOR
-            Debug.Log ("MobileInput execute " + json);
+            //("MobileInput execute " + json);
 #elif UNITY_ANDROID
             using (AndroidJavaClass plugin = new AndroidJavaClass (string.Format (Plugins.ANDROID_CLASS_MASK, _instance.Name))) {
                 plugin.CallStatic ("execute", id, json);

@@ -61,12 +61,12 @@ namespace Mopsicus.Plugins {
         /// <summary>
         /// "Done" button visible (for iOS)
         /// </summary>
-        public bool IsWithDoneButton = true;
+        public bool IsWithDoneButton = false;
 
         /// <summary>
         /// "(x)" button visible (for iOS)
         /// </summary>
-        public bool IsWithClearButton = true;
+        public bool IsWithClearButton = false;
 
         /// <summary>
         /// Type for return button
@@ -82,6 +82,11 @@ namespace Mopsicus.Plugins {
         /// Action when Focus changed
         /// </summary>
         public Action<bool> OnFocusChanged = delegate { };
+
+        /// <summary>
+        /// Action when Ready 
+        /// </summary>
+        public Action OnReady = delegate { };
 
         /// <summary>
         /// Event when Return pressed, for Unity inspector
@@ -137,6 +142,11 @@ namespace Mopsicus.Plugins {
         /// Set text to InputField
         /// </summary>
         const string SET_TEXT = "SET_TEXT";
+		
+        /// <summary>
+        /// Set palceholder to InputField
+        /// </summary>
+        const string SET_PLACEHOLDER = "SET_PLACEHOLDER";
 
         /// <summary>
         /// Set new Rect, position, size
@@ -238,10 +248,8 @@ namespace Mopsicus.Plugins {
         /// <summary>
         /// Handler for app focus lost
         /// </summary>
-        private void OnApplicationFocus (bool hasFocus) {
-            if (!_isMobileInputCreated || !this.Visible) {
-                return;
-            }
+        private void OnApplicationFocus(bool hasFocus) {
+            if (!_isMobileInputCreated)
             this.SetVisible (hasFocus);
         }
 
@@ -272,6 +280,19 @@ namespace Mopsicus.Plugins {
             set {
                 _inputObject.text = value;
                 SetTextNative (value);
+            }
+        }
+		
+        /// <summary>
+        /// MobileInput text
+        /// </summary>
+        public string Placeholder {
+            get {
+                return _inputObject.placeholder.GetComponent<Text>().text;
+            }
+            set {
+                _inputObject.placeholder.GetComponent<Text>().text = value;
+                SetPlaceholderNative (value);
             }
         }
 
@@ -427,6 +448,7 @@ namespace Mopsicus.Plugins {
                 this.OnTextChange (text);
             } else if (msg.Equals (READY)) {
                 this.Ready ();
+                OnReady();
             } else if (msg.Equals (ON_FOCUS)) {
                 OnFocusChanged (true);
             } else if (msg.Equals (ON_UNFOCUS)) {
@@ -527,6 +549,17 @@ namespace Mopsicus.Plugins {
             JsonObject data = new JsonObject ();
             data["msg"] = SET_TEXT;
             data["text"] = text;
+            this.Execute (data);
+        }
+		
+        /// <summary>
+        /// Set placeholder to field
+        /// </summary>
+        /// <param name="text">New placeholder</param>
+        void SetPlaceholderNative (string text) {
+            JsonObject data = new JsonObject ();
+            data["msg"] = SET_PLACEHOLDER;
+            data["placeholder"] = text;
             this.Execute (data);
         }
 

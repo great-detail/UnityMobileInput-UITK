@@ -41,12 +41,12 @@ namespace Mopsicus.Plugins {
     /// </summary>
 	public class Plugins : MonoBehaviour {
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         /// <summary>
         /// Mask for Java classes
         /// </summary>
         public const string ANDROID_CLASS_MASK = "ru.mopsicus.{0}.Plugin";
-#elif UNITY_IOS
+#elif UNITY_IOS && !UNITY_EDITOR
         /// <summary>
         /// Init iOS plugins
         /// </summary>
@@ -97,10 +97,10 @@ namespace Mopsicus.Plugins {
             JsonObject data = new JsonObject ();
             data["object"] = _dataObject;
             data["receiver"] = _dataReceiver;
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
             pluginsInit (data.ToJsonString ());
 #endif
-            Debug.Log ("Plugins init");
+            //Debug.Log ("Plugins init");
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Mopsicus.Plugins {
         /// </summary>
         /// <param name="data">data from plugin</param>
         void OnDataReceive (string data) {
-            Debug.Log ("Plugins receive data: " + data);
+            //Debug.Log ("Plugins receive data: " + data);
             try {
                 JsonObject info = (JsonObject) JsonNode.ParseJsonString (data);
                 if (_plugins.ContainsKey (info["name"])) {
