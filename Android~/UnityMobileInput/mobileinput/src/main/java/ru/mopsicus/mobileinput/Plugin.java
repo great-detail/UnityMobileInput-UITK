@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
-import ru.mopsicus.common.Common;
 import com.unity3d.player.UnityPlayer;
 
 

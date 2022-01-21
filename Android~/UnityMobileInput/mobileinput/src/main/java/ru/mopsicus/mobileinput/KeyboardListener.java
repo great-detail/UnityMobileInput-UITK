@@ -9,8 +9,6 @@ package ru.mopsicus.mobileinput;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ru.mopsicus.common.Common;
-
 public class KeyboardListener implements KeyboardObserver {
 
     private boolean isPreviousState = false;
