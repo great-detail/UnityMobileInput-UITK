@@ -452,7 +452,8 @@ public class MobileInput {
             return;
         }
         edit.setEnabled(isVisible);
-        edit.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        //edit.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        edit.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     // Handler to process Android buttons
