@@ -103,13 +103,13 @@ public class KeyboardProvider extends PopupWindow {
 
         // BF - 5/2/22
         // Added this log statement
-/*
+
         @SuppressLint("DefaultLocale")
         String message = String.format(
               "Rect = [%d, %d, %d, %d], HeightMax = %d,KeyboardHeight = %d, NavBarHeight = %d",
               rect.left, rect.right, rect.top, rect.bottom, heightMax, keyboardHeight, navBarHeight);
         Log.d("AGS", message);
-*/
+
 
         // BF - 5/2/22
         // This is what was happening on some devices.  Get two events, the first is wrong, the second is right
