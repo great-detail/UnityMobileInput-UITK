@@ -307,7 +307,10 @@ namespace Mopsicus.Plugins {
         /// Copy files from StreamingAssets to device path
         /// </summary>
         /// <param name="fileName">File name</param>
-        static void PrepareFontsAssets (string fileName) {
+        static void PrepareFontsAssets (string fileName)
+        {
+            Debug.Log("MobileInput - PrepareFontAssets()");
+            
             string folder = Application.dataPath;
             string filepath = string.Format ("{0}/{1}", Application.persistentDataPath, fileName);
 #if UNITY_EDITOR

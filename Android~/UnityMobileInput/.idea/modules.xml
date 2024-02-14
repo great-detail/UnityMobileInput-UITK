@@ -4,8 +4,17 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/UnityMobileInput.iml" filepath="$PROJECT_DIR$/.idea/UnityMobileInput.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/UnityMobileInput.app.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.iml" filepath="$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/common/UnityMobileInput.common.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.iml" filepath="$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.main.iml" filepath="$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/mobileinput/UnityMobileInput.mobileinput.unitTest.iml" />
     </modules>
   </component>
 </project>
