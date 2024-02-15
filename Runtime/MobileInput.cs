@@ -288,6 +288,7 @@ namespace Mopsicus.Plugins {
                 }
                 else
                 {
+                    _instance = null;
                     return;
                 }
             }
