@@ -86,6 +86,16 @@ namespace Mopsicus.Plugins {
         /// Handler for ShowDelegate
         /// </summary>
         public static ShowDelegate OnShowKeyboard = delegate { };
+        
+        /// <summary>
+        /// Delegate for prepare font error action
+        /// </summary>
+        public delegate void PrepareFontErrorDelegate ();
+
+        /// <summary>
+        /// Handler for PrepareFontErrorDelegate
+        /// </summary>
+        public static PrepareFontErrorDelegate OnPrepareFontError = delegate { };
 
         /// <summary>
         /// Mobile fields dictionary
@@ -253,18 +263,31 @@ namespace Mopsicus.Plugins {
         /// <summary>
         /// Init plugin
         /// </summary>
-        public static void Init () {
+        public static void Init ()
+        {
+            bool fontPrepSuccess = true;
             int state = PlayerPrefs.GetInt (INIT_KEY, 0);
             if (state == 0) {
                 string path = Application.streamingAssetsPath;
                 if (Directory.Exists (path)) {
                     string[] files = Directory.GetFiles (path, "*.ttf");
-                    foreach (string filePath in files) {
-                        PrepareFontsAssets (Path.GetFileName (filePath));
+                    foreach (string filePath in files)
+                    {
+                        fontPrepSuccess = PrepareFontsAssets(Path.GetFileName(filePath));
+                        if (!fontPrepSuccess)
+                            break;
                     }
                 }
-                PlayerPrefs.SetInt (INIT_KEY, 1);
-                PlayerPrefs.Save ();
+
+                if (fontPrepSuccess)
+                {
+                    PlayerPrefs.SetInt (INIT_KEY, 1);
+                    PlayerPrefs.Save ();
+                }
+                else
+                {
+                    return;
+                }
             }
 #if UNITY_EDITOR
 #elif UNITY_ANDROID
@@ -307,31 +330,44 @@ namespace Mopsicus.Plugins {
         /// Copy files from StreamingAssets to device path
         /// </summary>
         /// <param name="fileName">File name</param>
-        static void PrepareFontsAssets (string fileName)
+        static bool PrepareFontsAssets (string fileName)
         {
             Debug.Log("MobileInput - PrepareFontAssets()");
-            
+
+            bool success = true;
             string folder = Application.dataPath;
             string filepath = string.Format ("{0}/{1}", Application.persistentDataPath, fileName);
+
+            try
+            {
 #if UNITY_EDITOR
-            string data = string.Format ("{0}/{1}", Application.streamingAssetsPath, fileName);
-            if (File.Exists (filepath)) {
-                File.Delete (filepath);
-            }
-            File.Copy (data, filepath);
+                string data = string.Format ("{0}/{1}", Application.streamingAssetsPath, fileName);
+                if (File.Exists (filepath)) {
+                    File.Delete (filepath);
+                }
+                File.Copy (data, filepath);
 #elif UNITY_ANDROID
-            using (UnityWebRequest www = UnityWebRequest.Get (string.Format ("jar:file://{0}!/assets/{1}", folder, fileName))) {
-                www.SendWebRequest ();
-                while (!www.isDone) { }
-                File.WriteAllBytes (filepath, www.downloadHandler.data);
-            }
+                using (UnityWebRequest www = UnityWebRequest.Get (string.Format ("jar:file://{0}!/assets/{1}", folder, fileName))) {
+                    www.SendWebRequest ();
+                    while (!www.isDone) { }
+                    File.WriteAllBytes (filepath, www.downloadHandler.data);
+                }
 #elif UNITY_IOS
-            string data = string.Format ("{0}/Raw/{1}", folder, fileName);
-            if (File.Exists (filepath)) {
-                File.Delete (filepath);
-            }
-            File.Copy (data, filepath);
+                string data = string.Format ("{0}/Raw/{1}", folder, fileName);
+                if (File.Exists (filepath)) {
+                    File.Delete (filepath);
+                }
+                File.Copy (data, filepath);
 #endif
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"MobileInput Exception - PrepareFontAssets() - {e.ToString()}");
+                OnPrepareFontError();
+                success = false;
+            }
+
+            return success;
         }
 
         /// <summary>
