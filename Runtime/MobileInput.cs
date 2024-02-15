@@ -121,8 +121,6 @@ namespace Mopsicus.Plugins {
         /// MobileInput counter
         /// </summary>
         private int _counter = 0;
-
-        private static int sTestFontExceptionCount = 0;
         
 #if UNITY_IOS
         /// <summary>
@@ -340,13 +338,6 @@ namespace Mopsicus.Plugins {
             bool success = true;
             string folder = Application.dataPath;
             string filepath = string.Format ("{0}/{1}", Application.persistentDataPath, fileName);
-
-            if (sTestFontExceptionCount < 2)
-            {
-                sTestFontExceptionCount++;
-                OnPrepareFontError();
-                return false;
-            }
             
             try
             {
