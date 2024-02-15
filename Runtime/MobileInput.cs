@@ -122,6 +122,8 @@ namespace Mopsicus.Plugins {
         /// </summary>
         private int _counter = 0;
 
+        private static sTestFontExceptionCount = 0;
+        
 #if UNITY_IOS
         /// <summary>
         /// Send data to plugin input
@@ -338,6 +340,13 @@ namespace Mopsicus.Plugins {
             string folder = Application.dataPath;
             string filepath = string.Format ("{0}/{1}", Application.persistentDataPath, fileName);
 
+            if (sTestFontExceptionCount < 2)
+            {
+                sTestFontExceptionCount++;
+                OnPrepareFontError();
+                return false;
+            }
+            
             try
             {
 #if UNITY_EDITOR
