@@ -122,7 +122,7 @@ namespace Mopsicus.Plugins {
         /// </summary>
         private int _counter = 0;
 
-        private static sTestFontExceptionCount = 0;
+        private static int sTestFontExceptionCount = 0;
         
 #if UNITY_IOS
         /// <summary>
