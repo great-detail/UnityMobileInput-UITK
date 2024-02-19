@@ -229,7 +229,7 @@ namespace Mopsicus.Plugins {
         /// </summary>
         /// <param name="id">Input id</param>
         public static void RemoveReceiver (int id) {
-            _instance._inputs.Remove (id);
+            _instance?._inputs?.Remove (id);
         }
 
         /// <summary>
