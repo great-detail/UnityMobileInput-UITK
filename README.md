@@ -1,13 +1,10 @@
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/mopsicus/UnityMobileInput/blob/master/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/mopsicus/UnityMobileInput.svg)](https://GitHub.com/mopsicus/UnityMobileInput/issues/) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/mopsicus/UnityMobileInput/graphs/commit-activity)
 
 # UnityMobileInput
-Unity Mobile Input Plugin for iOS and Android (Unity UI compatible)
-You can use default InputField UI component on iOS and Android `without additional field` above keyboard
-
-> It's deep refactor and bug fix of UnityNativeEdit (https://github.com/kmbang/UnityNativeEdit)
+Unity Mobile Input Plugin for iOS and Android (Unity UI Toolkit compatible). This is a refactor of the original plugin to allow it to work in UI Toolkit.
 
 ## Installation
-Add url `https://github.com/mopsicus/UnityMobileInput.git` to Package Manager, or add the following line to Packages/manifest.json: `"ru.mopsicus.mobileinput": "https://github.com/mopsicus/UnityMobileInput.git"`
+Add this as a submodule in git and then initialise the projects git submodules
 
 ## Features
 1. Native input field and keyboard on iOS and Android
