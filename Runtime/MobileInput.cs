@@ -381,7 +381,5 @@ namespace Mopsicus.Plugins {
                 }
             }
         }
-
     }
-
 }

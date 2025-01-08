@@ -1,0 +1,20 @@
+﻿The UMI plugin is built for UGUI, but it can be adapted to work with the Unity UI Toolkit. You can check it out here: https://github.com/mopsicus/umi
+
+It’s a pretty straightforward plugin, and the docs are available at the link above.
+
+The Catch: UI Toolkit Integration Challenges
+Getting this plugin to play nice with the UI Toolkit comes with a few issues. Here's what you need to know:
+
+MonoBehaviour Dependence
+A lot of the plugin’s functionality relies on MonoBehaviour. While it’s tempting to mimic this behavior in the UI Toolkit, it’s honestly just easier (and safer) to keep using MonoBehaviour. I tried using VisualElement callbacks, but they were unreliable and caused errors.
+
+To make this work, I refactored GDPlugins to stick with MonoBehaviour. This way, the plugin works like it always has. We simply pass the usual MonoBehaviour methods (like Update) as virtual methods, so they can be overridden by visual elements if needed.
+
+UGUI vs. UI Toolkit Differences
+The Unity UI Toolkit handles things like native text fields a bit differently:
+
+It works off a default resolution you set in the editor, which means all device events are adjusted to fit that resolution.
+The problem is that the world rectangle values from a VisualElement don’t match the actual screen resolution.
+To fix this, you need to compare the UI Toolkit's screen space with the device's screen space. By calculating an x and y adjustment, you can map the two properly and ensure everything lines up 1:1.
+
+With these tweaks, the plugin works smoothly in the UI Toolkit without losing any of its functionality.
