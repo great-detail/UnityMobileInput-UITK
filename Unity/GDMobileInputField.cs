@@ -54,21 +54,25 @@ namespace Mopsicus.AG.Modified
         /// <summary>
         /// Custom font name
         /// </summary>
-        public string pCustomFont = "default";
+        [UxmlAttribute]
+        public string pCustomFont = "SairaSemiCondensed-Regular";
 
         /// <summary>
         /// Hide and deselect input manually
         /// </summary>
+        [UxmlAttribute]
         public bool pIsManualHideControl = false;
 
         /// <summary>
         /// "Done" button visible (for iOS)
         /// </summary>
+        [UxmlAttribute]
         public bool pIsWithDoneButton = false;
 
         /// <summary>
         /// "(x)" button visible (for iOS)
         /// </summary>
+        [UxmlAttribute]
         public bool pIsWithClearButton = false;
 
         /// <summary>
@@ -255,10 +259,6 @@ namespace Mopsicus.AG.Modified
         
         public void InitialiseTextField()
         {
-            if (mIsInitialized)
-                return;
-            
-
             this.style.flexDirection = FlexDirection.Column;
             
             // Equivalent to awake in actual package
@@ -270,10 +270,11 @@ namespace Mopsicus.AG.Modified
                 return;
             }
 
-            var ok = mInputObject.Q<VisualElement>("unity-text-input");
-            foreach (var child in ok.Children())
+            var unityTextInput = mInputObject.Q<VisualElement>("unity-text-input");
+            foreach (var child in unityTextInput.Children())
             {
                 mPlaceHolderText = child;
+                UnityEngine.Debug.Log("mPlaceHolderText: " + mPlaceHolderText);
             }
             
             VisualElement current = this;
@@ -305,6 +306,7 @@ namespace Mopsicus.AG.Modified
         private void InitializeOnNextFrame()
         {
             this.PrepareNativeEdit();
+            
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
@@ -396,23 +398,13 @@ namespace Mopsicus.AG.Modified
                 return;
             }
             
-            // Character Limit
-            int characterLimit = mInputObject.maxLength; // maxLength corresponds to the character limit.
-
-            // Screen rect
-            Rect rect = GetScreenRectFromVisualElement(mPlaceHolderText);
-            
-            float ratio = (rect.height / pRatioY) / mPlaceHolderText.resolvedStyle.height;
-            float fontSize = mPlaceHolderText.resolvedStyle.fontSize * ratio;
-            
-            
             // Config preparation
             mConfig.Placeholder = "";
             mConfig.PlaceholderColor = Color.clear;
-            mConfig.CharacterLimit = characterLimit;
+            mConfig.CharacterLimit = mInputObject.maxLength;
             
-            // Accounts for the slight misconfiguration between unity & native
-            mConfig.FontSize = fontSize + 1.5f;
+            // Discrepancy between font size and unity text field (Potentially, font issue?)
+            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.2f;
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
             mConfig.ContentType = "Standard";
