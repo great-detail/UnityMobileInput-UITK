@@ -117,6 +117,11 @@ namespace Mopsicus.AG.Modified
         private TextField mInputObject;
 
         /// <summary>
+        /// InputField object
+        /// </summary>
+        private VisualElement mUnityTextInput;
+        
+        /// <summary>
         /// PlaceHolderText object
         /// </summary>
         private VisualElement mPlaceHolderText;
@@ -237,6 +242,14 @@ namespace Mopsicus.AG.Modified
         }
 
         /// <summary>
+        /// Current Unity Text Input for external access
+        /// </summary>
+        public VisualElement pUnityTextField
+        {
+            get { return mUnityTextInput; }
+        }
+        
+        /// <summary>
         /// MobileInput visible
         /// </summary>
         public bool pVisible { get; private set; }
@@ -270,11 +283,10 @@ namespace Mopsicus.AG.Modified
                 return;
             }
 
-            var unityTextInput = mInputObject.Q<VisualElement>("unity-text-input");
-            foreach (var child in unityTextInput.Children())
+            mUnityTextInput = mInputObject.Q<VisualElement>("unity-text-input");
+            foreach (var child in mUnityTextInput.Children())
             {
                 mPlaceHolderText = child;
-                UnityEngine.Debug.Log("mPlaceHolderText: " + mPlaceHolderText);
             }
             
             VisualElement current = this;
@@ -403,8 +415,8 @@ namespace Mopsicus.AG.Modified
             mConfig.PlaceholderColor = Color.clear;
             mConfig.CharacterLimit = mInputObject.maxLength;
             
-            // Discrepancy between font size and unity text field (Potentially, font issue?)
-            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.2f;
+            // Mismatch between unity and native keyboard
+            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.5f;
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
             mConfig.ContentType = "Standard";
@@ -431,11 +443,11 @@ namespace Mopsicus.AG.Modified
             data["text_color_r"] = InvariantCultureString(mConfig.TextColor.r);
             data["text_color_g"] = InvariantCultureString(mConfig.TextColor.g);
             data["text_color_b"] = InvariantCultureString(mConfig.TextColor.b);
-            data["text_color_a"] = InvariantCultureString(0.0f); // Fully transparent
+            data["text_color_a"] = InvariantCultureString(0.0f); // Use unity text field instead
             data["back_color_r"] = InvariantCultureString(mConfig.BackgroundColor.r);
             data["back_color_g"] = InvariantCultureString(mConfig.BackgroundColor.g);
             data["back_color_b"] = InvariantCultureString(mConfig.BackgroundColor.b);
-            data["back_color_a"] = InvariantCultureString(0.0f); // Fully transparent
+            data["back_color_a"] = InvariantCultureString(0.0f); // Use unity text field instead
             data["font_size"] = InvariantCultureString(mConfig.FontSize);
             data["content_type"] = mConfig.ContentType;
             data["align"] = mConfig.Align;
