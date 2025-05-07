@@ -145,11 +145,6 @@ namespace Mopsicus.AG.Modified
         /// Current config
         /// </summary>
         private MobileInputConfig mConfig;
-
-        /// <summary>
-        /// Initilisation flag for panel adding
-        /// </summary>
-        private bool mIsInitialized = false;
         
         
         
@@ -303,8 +298,6 @@ namespace Mopsicus.AG.Modified
             mInputObject.RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
             
             OnAttachToPanel();
-            
-            mIsInitialized = true;
         }
 
         private void OnAttachToPanel()
