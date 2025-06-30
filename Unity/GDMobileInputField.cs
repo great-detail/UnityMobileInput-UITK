@@ -3,7 +3,7 @@ using NiceJson;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
-using AwesomeGolf;
+using AwesomeGolfEngine;
 
 
 
@@ -400,7 +400,7 @@ namespace Mopsicus.AG.Modified
             // Access the TextField
             if (mInputObject == null)
             {
-                AgLogger.LogE("The provided input object is not a TextField.");
+                GdLogger.LogE("The provided input object is not a TextField.");
                 return;
             }
             
