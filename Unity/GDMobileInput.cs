@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.Networking;
 using NiceJson;
 using System.IO;
 using AwesomeGolf;
-using UnityEngine.Networking;
+using AwesomeGolfEngine;
 #if UNITY_IOS
 using System.Runtime.InteropServices;
 #endif
@@ -426,7 +427,7 @@ namespace Mopsicus.AG.Modified
             }
             catch (Exception e)
             {
-                AgLogger.LogE(string.Format("{0} plugin OnData error: {1}", GetType().Name, e.Message));
+                GdLogger.LogE(string.Format("{0} plugin OnData error: {1}", GetType().Name, e.Message));
             }
         }
 
@@ -435,7 +436,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         public void OnError(JsonObject data)
         {
-            AgLogger.LogE(string.Format("{0} plugin OnError: {0}", GetType().Name,
+            GdLogger.LogE(string.Format("{0} plugin OnError: {0}", GetType().Name,
                 data.ToJsonPrettyPrintString()));
             _error = data;
             try
@@ -444,7 +445,7 @@ namespace Mopsicus.AG.Modified
             }
             catch (Exception e)
             {
-                AgLogger.LogE(string.Format("{0} plugin OnError error: {1}", GetType().Name, e.Message));
+                GdLogger.LogE(string.Format("{0} plugin OnError error: {1}", GetType().Name, e.Message));
             }
         }
 
