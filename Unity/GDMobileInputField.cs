@@ -295,7 +295,6 @@ namespace Mopsicus.AG.Modified
             pRatioX = Screen.width / root.resolvedStyle.width;
             pRatioY = Screen.height / root.resolvedStyle.height;
       
-            // Register events
             mInputObject.RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
             
             OnAttachToPanel();
@@ -311,15 +310,22 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void InitializeOnNextFrame()
         {
+            // Resolve the objects after the panel is attached
+            this.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+        }
+
+        private void OnGeometryChanged(GeometryChangedEvent evt)
+        {
+            this.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+    
             this.PrepareNativeEdit();
-            
+    
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
 #endif
         }
 
-        
         
         //***************************************************************************
         // Monobehaviours
@@ -397,20 +403,16 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void PrepareNativeEdit()
         {
-            // Access the TextField
             if (mInputObject == null)
             {
                 GdLogger.LogE("The provided input object is not a TextField.");
                 return;
             }
             
-            // Config preparation
             mConfig.Placeholder = "";
             mConfig.PlaceholderColor = Color.clear;
             mConfig.CharacterLimit = mInputObject.maxLength;
-            
-            // Mismatch between unity and native keyboard
-            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.5f;
+            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize;
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
             mConfig.ContentType = "Standard";
@@ -441,7 +443,7 @@ namespace Mopsicus.AG.Modified
             data["back_color_r"] = InvariantCultureString(mConfig.BackgroundColor.r);
             data["back_color_g"] = InvariantCultureString(mConfig.BackgroundColor.g);
             data["back_color_b"] = InvariantCultureString(mConfig.BackgroundColor.b);
-            data["back_color_a"] = InvariantCultureString(0.0f); // Use unity text field instead
+            data["back_color_a"] = InvariantCultureString(0.1f); // Use unity text field instead
             data["font_size"] = InvariantCultureString(mConfig.FontSize);
             data["content_type"] = mConfig.ContentType;
             data["align"] = mConfig.Align;
