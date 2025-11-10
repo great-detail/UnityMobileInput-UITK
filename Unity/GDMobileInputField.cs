@@ -319,7 +319,8 @@ namespace Mopsicus.AG.Modified
             this.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
     
             this.PrepareNativeEdit();
-    
+
+            
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
@@ -412,13 +413,13 @@ namespace Mopsicus.AG.Modified
             mConfig.Placeholder = "";
             mConfig.PlaceholderColor = Color.clear;
             mConfig.CharacterLimit = mInputObject.maxLength;
-            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize;
+            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.5f;
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
             mConfig.ContentType = "Standard";
             mConfig.BackgroundColor = mInputObject.resolvedStyle.backgroundColor;
             mConfig.Multiline = mInputObject.multiline;
-            mConfig.KeyboardType = "Default";
+            mConfig.KeyboardType = mInputObject.keyboardType.ToString();
             mConfig.InputType = "Standard";
         }
 
@@ -427,7 +428,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void CreateNativeEdit()
         {
-            Rect rect = GetScreenRectFromVisualElement(mPlaceHolderText);
+            Rect rect = GetScreenRectFromVisualElement(mInputObject);
 
             JsonObject data = new JsonObject();
             data["msg"] = cCREATE;
@@ -439,11 +440,11 @@ namespace Mopsicus.AG.Modified
             data["text_color_r"] = InvariantCultureString(mConfig.TextColor.r);
             data["text_color_g"] = InvariantCultureString(mConfig.TextColor.g);
             data["text_color_b"] = InvariantCultureString(mConfig.TextColor.b);
-            data["text_color_a"] = InvariantCultureString(0.0f); // Use unity text field instead
+            data["text_color_a"] = InvariantCultureString(1.0f);
             data["back_color_r"] = InvariantCultureString(mConfig.BackgroundColor.r);
             data["back_color_g"] = InvariantCultureString(mConfig.BackgroundColor.g);
             data["back_color_b"] = InvariantCultureString(mConfig.BackgroundColor.b);
-            data["back_color_a"] = InvariantCultureString(0.1f); // Use unity text field instead
+            data["back_color_a"] = InvariantCultureString(0.0f); // Use unity text field instead
             data["font_size"] = InvariantCultureString(mConfig.FontSize);
             data["content_type"] = mConfig.ContentType;
             data["align"] = mConfig.Align;
@@ -705,6 +706,14 @@ namespace Mopsicus.AG.Modified
         {
             if (text == this.mInputObject.text) return;
             this.mInputObject.value = text;
+            
+            // Set Unity text alpha based on whether native keyboard has text
+            if (mUnityTextInput != null)
+            {
+                float alpha = string.IsNullOrEmpty(text) ? 1.0f : 0.0f;
+                Color currentColor = mConfig.TextColor;
+                mUnityTextInput.style.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
+            }
         }
 
         /// <summary>
@@ -714,7 +723,6 @@ namespace Mopsicus.AG.Modified
         private void OnTextEditEnd(string text)
         {
             this.mInputObject.value = text;
-            
             SetFocus(false);
         }
         
