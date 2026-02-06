@@ -259,6 +259,32 @@ namespace Mopsicus.AG.Modified
         /// Ratio from UI Toolkit to devices aspect ratio
         /// </summary>
         public float pRatioY { get; private set; }
+
+
+
+        //***************************************************************************
+        // Always On Top Hack Properties
+        //***************************************************************************
+        
+        /// <summary>
+        /// Reference to Unity Text element used as replacement when native field is hidden
+        /// </summary>
+        private Label mForceBehindReplacementText;
+        
+        /// <summary>
+        /// Cached placeholder text for the hack
+        /// </summary>
+        private string mMobileHackPlaceholderText;
+        
+        /// <summary>
+        /// Cached input text for the hack
+        /// </summary>
+        private string mMobileHackInputText;
+        
+        /// <summary>
+        /// Counter for nested always-on-top hack activations
+        /// </summary>
+        private int mAlwaysOnTopHackCount;
         
         
         
@@ -789,6 +815,143 @@ namespace Mopsicus.AG.Modified
             }
             
             RemoveNative(); 
+        }
+        
+        
+        
+        //***************************************************************************
+        // Utilities
+        //***************************************************************************
+        
+        /// <summary>
+        /// Set the replacement label reference for the always-on-top hack
+        /// </summary>
+        /// <param name="replacementLabel">Label to use as replacement</param>
+        public void SetReplacementLabel(Label replacementLabel)
+        {
+            mForceBehindReplacementText = replacementLabel;
+        }
+        
+        /// <summary>
+        /// On iOS, editViews are created in the native plugin and added to the main view
+        /// controller (i.e. Unity's game view). This means that UITextFields are always
+        /// drawn on top. They can also be part of scroll views and be under dialog boxes.
+        /// This hack switches them off when they might be 'under' other UI elements.
+        /// </summary>
+        public void ReplaceNativeTextFieldWithUnityView()
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (mForceBehindReplacementText == null)
+            {
+                GdLogger.LogW("ReplaceNativeTextFieldWithUnityView called but no replacement label set");
+                return;
+            }
+            
+            var clearTexts = false;
+            // We only want/need to do this for the first time its required
+            // (i.e. multiple things can happen at the same time that force the hack)
+            if (mAlwaysOnTopHackCount == 0)
+            {
+                SetFocus(false);
+                mForceBehindReplacementText.style.display = DisplayStyle.Flex;
+
+                mMobileHackPlaceholderText = mConfig.Placeholder;
+                mMobileHackInputText = mInputObject.text;
+
+                // If there is no text entered, we want to 'copy' the placeholder
+                if (string.IsNullOrEmpty(mMobileHackInputText))
+                {
+                    mForceBehindReplacementText.text = mMobileHackPlaceholderText;
+                    mForceBehindReplacementText.style.color = mConfig.PlaceholderColor;
+                }
+                else
+                {
+                    mForceBehindReplacementText.text = mMobileHackInputText;
+                    mForceBehindReplacementText.style.color = mConfig.TextColor;
+                }
+
+                clearTexts = true;
+            }
+
+            mAlwaysOnTopHackCount++;
+
+            // Do the above before this. ALWAYS!
+            if (clearTexts)
+            {
+                SetVisible(false);
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Update the replacement text when input changes while hack is active
+        /// </summary>
+        /// <param name="text">New text value</param>
+        private void UpdateReplacementText(string text)
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (mForceBehindReplacementText == null) return;
+            
+            mMobileHackInputText = text;
+            if (string.IsNullOrEmpty(text))
+            {
+                mForceBehindReplacementText.text = mMobileHackPlaceholderText;
+                mForceBehindReplacementText.style.color = mConfig.PlaceholderColor;
+            }
+            else
+            {
+                mForceBehindReplacementText.text = text;
+                mForceBehindReplacementText.style.color = mConfig.TextColor;
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Restore the native text field after the overlay is removed
+        /// </summary>
+        public void ReplaceUnityViewWithNativeTextField()
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (mAlwaysOnTopHackCount > 0)
+            {
+                mAlwaysOnTopHackCount--;
+                if (mInputObject != null && mAlwaysOnTopHackCount == 0)
+                {
+                    SetVisible(true);
+                    if (mForceBehindReplacementText != null)
+                    {
+                        mForceBehindReplacementText.style.display = DisplayStyle.None;
+                    }
+                }
+            }
+#endif
+        }
+        
+        /// <summary>
+        /// Get current text, accounting for the always-on-top hack state
+        /// </summary>
+        public string Text
+        {
+            get
+            {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+                if (mAlwaysOnTopHackCount > 0)
+                    return mMobileHackInputText;
+#endif
+                return mInputObject?.text ?? "";
+            }
+            set
+            {
+                if (mInputObject != null)
+                {
+                    mInputObject.value = value;
+                    SetTextNative(value);
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+                    if (mAlwaysOnTopHackCount > 0)
+                        UpdateReplacementText(value);
+#endif
+                }
+            }
         }
         
         
