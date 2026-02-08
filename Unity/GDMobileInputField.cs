@@ -306,6 +306,7 @@ namespace Mopsicus.AG.Modified
             }
 
             mUnityTextInput = mInputObject.Q<VisualElement>("unity-text-input");
+            
             foreach (var child in mUnityTextInput.Children())
             {
                 mPlaceHolderText = child;
@@ -373,7 +374,7 @@ namespace Mopsicus.AG.Modified
                 int touchCount = Input.touchCount;
                 if (touchCount > 0)
                 {
-                    Rect inputRect = GetScreenRectFromVisualElement(this.mInputObject);
+                    Rect inputRect = GetScreenRectFromVisualElement(this.mUnityTextInput);
                     for (int i = 0; i < touchCount; i++) {
                         if (!inputRect.Contains (Input.GetTouch(i).position)) {
                             if (!pIsManualHideControl) {
@@ -454,7 +455,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void CreateNativeEdit()
         {
-            Rect rect = GetScreenRectFromVisualElement(mInputObject);
+            Rect rect = GetScreenRectFromVisualElement(mUnityTextInput);
 
             JsonObject data = new JsonObject();
             data["msg"] = cCREATE;
@@ -626,7 +627,7 @@ namespace Mopsicus.AG.Modified
         /// <param name="inputRect">RectTransform</param>
         public void SetRectNative()
         {
-            Rect rect = GetScreenRectFromVisualElement(mPlaceHolderText);
+            Rect rect = GetScreenRectFromVisualElement(mUnityTextInput);
             if (mLastRect == rect)
             {
                 return;
