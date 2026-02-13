@@ -337,23 +337,31 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void InitializeOnNextFrame()
         {
-            // Resolve the objects after the panel is attached
+            // If geometry is already resolved, set up immediately
+            if (this.resolvedStyle.width > 0 && this.resolvedStyle.height > 0)
+            {
+                SetupNativeEdit();
+                return;
+            }
+
             this.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
         {
             this.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-    
+            SetupNativeEdit();
+        }
+
+        private void SetupNativeEdit()
+        {
             this.PrepareNativeEdit();
 
-            
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
 #endif
         }
-
         
         //***************************************************************************
         // Monobehaviours
@@ -376,7 +384,11 @@ namespace Mopsicus.AG.Modified
                 {
                     Rect inputRect = GetScreenRectFromVisualElement(this.mUnityTextInput);
                     for (int i = 0; i < touchCount; i++) {
-                        if (!inputRect.Contains (Input.GetTouch(i).position)) {
+                        Vector2 touchPos = Input.GetTouch(i).position;
+                        TouchPhase phase = Input.GetTouch(i).phase;
+                        bool isInside = inputRect.Contains(touchPos);
+                        
+                        if (!isInside) {
                             if (!pIsManualHideControl) {
                                 Hide();
                             }
