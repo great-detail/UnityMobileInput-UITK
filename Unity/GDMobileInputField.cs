@@ -337,23 +337,31 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void InitializeOnNextFrame()
         {
-            // Resolve the objects after the panel is attached
+            // If geometry is already resolved, set up immediately
+            if (this.resolvedStyle.width > 0 && this.resolvedStyle.height > 0)
+            {
+                SetupNativeEdit();
+                return;
+            }
+
             this.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
         {
             this.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-    
+            SetupNativeEdit();
+        }
+
+        private void SetupNativeEdit()
+        {
             this.PrepareNativeEdit();
 
-            
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
 #endif
         }
-
         
         //***************************************************************************
         // Monobehaviours
@@ -376,7 +384,11 @@ namespace Mopsicus.AG.Modified
                 {
                     Rect inputRect = GetScreenRectFromVisualElement(this.mUnityTextInput);
                     for (int i = 0; i < touchCount; i++) {
-                        if (!inputRect.Contains (Input.GetTouch(i).position)) {
+                        Vector2 touchPos = Input.GetTouch(i).position;
+                        TouchPhase phase = Input.GetTouch(i).phase;
+                        bool isInside = inputRect.Contains(touchPos);
+                        
+                        if (!isInside) {
                             if (!pIsManualHideControl) {
                                 Hide();
                             }
@@ -440,14 +452,30 @@ namespace Mopsicus.AG.Modified
             mConfig.Placeholder = "";
             mConfig.PlaceholderColor = Color.clear;
             mConfig.CharacterLimit = mInputObject.maxLength;
-            mConfig.FontSize = mPlaceHolderText.resolvedStyle.fontSize - 12.5f;
+            
+            Rect rect = GetScreenRectFromVisualElement(mInputObject);
+            float ratio = rect.height / mInputObject.resolvedStyle.height;
+            mConfig.FontSize = mInputObject.resolvedStyle.fontSize * ratio;
+
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
-            mConfig.ContentType = "Standard";
+            mConfig.InputType = mInputObject.isPasswordField ? "Password" : "Standard";
+            mConfig.ContentType = mInputObject.isPasswordField
+                ? "Password"
+                : mInputObject.keyboardType switch
+                {
+                    TouchScreenKeyboardType.Default => "Standard",
+                    TouchScreenKeyboardType.EmailAddress => "EmailAddress",
+                    TouchScreenKeyboardType.NumberPad => "IntegerNumber",
+                    TouchScreenKeyboardType.PhonePad => "Pin",
+                    TouchScreenKeyboardType.NumbersAndPunctuation => "DecimalNumber",
+                    TouchScreenKeyboardType.NamePhonePad => "Name",
+                    _ => "Standard"
+                };
             mConfig.BackgroundColor = mInputObject.resolvedStyle.backgroundColor;
             mConfig.Multiline = mInputObject.multiline;
             mConfig.KeyboardType = mInputObject.keyboardType.ToString();
-            mConfig.InputType = "Standard";
+            mConfig.InputType = mInputObject.isPasswordField ? "Password" : "Standard";
         }
 
         /// <summary>
@@ -628,7 +656,7 @@ namespace Mopsicus.AG.Modified
         public void SetRectNative()
         {
             Rect rect = GetScreenRectFromVisualElement(mUnityTextInput);
-            if (mLastRect == rect)
+            if (RectApproximatelyEqual(mLastRect, rect))
             {
                 return;
             }
@@ -969,6 +997,17 @@ namespace Mopsicus.AG.Modified
         private string InvariantCultureString(float value)
         {
             return value.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Compare two Rects with a small tolerance to avoid floating-point jitter
+        /// </summary>
+        private bool RectApproximatelyEqual(Rect a, Rect b, float tolerance = 1.0f)
+        {
+            return Mathf.Abs(a.x - b.x) < tolerance &&
+                   Mathf.Abs(a.y - b.y) < tolerance &&
+                   Mathf.Abs(a.width - b.width) < tolerance &&
+                   Mathf.Abs(a.height - b.height) < tolerance;
         }
     }
 }
