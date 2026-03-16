@@ -449,8 +449,14 @@ namespace Mopsicus.AG.Modified
                 return;
             }
             
-            mConfig.Placeholder = "";
-            mConfig.PlaceholderColor = Color.clear;
+            var placeholderText = mInputObject.textEdition.placeholder;
+            mConfig.Placeholder = string.IsNullOrEmpty(placeholderText)
+                ? ""
+                : placeholderText;
+            mConfig.PlaceholderColor = mPlaceHolderText != null
+                ? mPlaceHolderText.resolvedStyle.color
+                : new Color(0.5f, 0.5f, 0.5f, 1.0f);
+            
             mConfig.CharacterLimit = mInputObject.maxLength;
             
             Rect rect = GetScreenRectFromVisualElement(mInputObject);
