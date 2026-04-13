@@ -550,6 +550,23 @@ namespace Mopsicus.AG.Modified
             data["msg"] = cREMOVE;
             this.Execute(data);
         }
+
+        /// <summary>
+        /// Refreshes the native state to apply password field changes
+        /// </summary>
+        public void RefreshNativeState()
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (mIsMobileInputCreated && mInputObject != null)
+            {
+                // We need to re-create the native view to update the input type (Password/Standard)
+                RemoveNative();
+                PrepareNativeEdit();
+                CreateNativeEdit();
+                SetTextNative(mInputObject.text);
+            }
+#endif
+        }
         
         
         
