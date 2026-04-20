@@ -289,6 +289,14 @@ namespace Mopsicus.AG.Modified
         
         
         //***************************************************************************
+        // UITK Properties
+        //***************************************************************************
+        
+        private bool mPendingFocus = false;
+
+        
+        
+        //***************************************************************************
         // Input Field - Initialisation
         //***************************************************************************
         
@@ -610,10 +618,12 @@ namespace Mopsicus.AG.Modified
             }
             else if (msg.Equals(cON_FOCUS))
             {
+                mPendingFocus = false;
                 OnFocusChanged(true);
             }
             else if (msg.Equals(cON_UNFOCUS))
             {
+                mPendingFocus = false;
                 OnFocusChanged(false);
             }
             else if (msg.Equals(cTEXT_END_EDIT))
@@ -642,8 +652,10 @@ namespace Mopsicus.AG.Modified
                 SetVisible(false);
             }
 
-            if (mIsFocusOnCreate)
+            if (mIsFocusOnCreate || mPendingFocus)
             {
+                mIsFocusOnCreate = false;
+                mPendingFocus = false;
                 SetFocus(true);
             }
         }
@@ -705,9 +717,13 @@ namespace Mopsicus.AG.Modified
             if (!mIsMobileInputCreated)
             {
                 mIsFocusOnCreate = isFocus;
+                mPendingFocus = isFocus;
                 return;
             }
 
+            // Native field exists but may not be fully ready — send focus
+            // and flag a pending retry in case it silently fails
+            mPendingFocus = isFocus;
             JsonObject data = new JsonObject();
             data["msg"] = cSET_FOCUS;
             data["is_focus"] = isFocus;
