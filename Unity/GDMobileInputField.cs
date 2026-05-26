@@ -478,7 +478,7 @@ namespace Mopsicus.AG.Modified
                 ? "Password"
                 : mInputObject.keyboardType switch
                 {
-                    TouchScreenKeyboardType.Default => "Standard",
+                    TouchScreenKeyboardType.Default => "EmailAddress",
                     TouchScreenKeyboardType.EmailAddress => "EmailAddress",
                     TouchScreenKeyboardType.NumberPad => "IntegerNumber",
                     TouchScreenKeyboardType.PhonePad => "Pin",
