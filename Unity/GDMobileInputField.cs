@@ -368,6 +368,12 @@ namespace Mopsicus.AG.Modified
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
+
+            // Hide the Unity text input so it doesn't overlap with the native field
+            if (mUnityTextInput != null)
+            {
+                mUnityTextInput.style.visibility = Visibility.Hidden;
+            }
 #endif
         }
         
@@ -800,14 +806,6 @@ namespace Mopsicus.AG.Modified
         {
             if (text == this.mInputObject.text) return;
             this.mInputObject.value = text;
-            
-            // Set Unity text alpha based on whether native keyboard has text
-            if (mUnityTextInput != null)
-            {
-                float alpha = string.IsNullOrEmpty(text) ? 1.0f : 0.0f;
-                Color currentColor = mConfig.TextColor;
-                mUnityTextInput.style.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
-            }
         }
 
         /// <summary>
