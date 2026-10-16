@@ -226,6 +226,9 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         const string INIT_KEY = "mobileinput_inited";
 
+        // A fixed name, not GetType().Name, because the obfuscator renames this class.
+        public const string cPluginName = "gdmobileinput";
+
 
 
         //***************************************************************************
@@ -237,7 +240,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         public string Name
         {
-            get { return GetType().Name.ToLower(); }
+            get { return cPluginName; }
         }
 
         /// <summary>

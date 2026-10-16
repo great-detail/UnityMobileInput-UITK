@@ -140,7 +140,7 @@ namespace Mopsicus.AG.Modified {
                 // GDMobileInput overrides the mobile input
                 if (info["name"] == "mobileinput")
                 {
-                    info["name"] = "gdmobileinput";
+                    info["name"] = GDMobileInput.cPluginName;
                 }
                 
                 if (mPlugins.ContainsKey (info["name"])) {
