@@ -221,11 +221,6 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         const string KEYBOARD_ACTION = "KEYBOARD_ACTION";
 
-        /// <summary>
-        /// Key name for settings save
-        /// </summary>
-        const string INIT_KEY = "mobileinput_inited";
-
         // A fixed name, not GetType().Name, because the obfuscator renames this class.
         public const string cPluginName = "gdmobileinput";
 
@@ -291,31 +286,22 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         public static void Init()
         {
-            bool fontPrepSuccess = true;
-            int state = PlayerPrefs.GetInt(INIT_KEY, 0);
-            if (state == 0)
+            string path = Application.streamingAssetsPath;
+            if (Directory.Exists(path))
             {
-                string path = Application.streamingAssetsPath;
-                if (Directory.Exists(path))
+                string[] files = Directory.GetFiles(path, "*.ttf");
+                foreach (string filePath in files)
                 {
-                    string[] files = Directory.GetFiles(path, "*.ttf");
-                    foreach (string filePath in files)
-                    {
-                        fontPrepSuccess = PrepareFontsAssets(Path.GetFileName(filePath));
-                        if (!fontPrepSuccess)
-                            break;
-                    }
-                }
+                    var fileName = Path.GetFileName(filePath);
+                    var copy = new FileInfo(Path.Combine(Application.persistentDataPath, fileName));
+                    if (copy.Exists && copy.Length == new FileInfo(filePath).Length)
+                        continue;
 
-                if (fontPrepSuccess)
-                {
-                    PlayerPrefs.SetInt(INIT_KEY, 1);
-                    PlayerPrefs.Save();
-                }
-                else
-                {
-                    _instance = null;
-                    return;
+                    if (!PrepareFontsAssets(fileName))
+                    {
+                        _instance = null;
+                        return;
+                    }
                 }
             }
 

@@ -122,10 +122,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private VisualElement mUnityTextInput;
         
-        /// <summary>
-        /// PlaceHolderText object
-        /// </summary>
-        private VisualElement mPlaceHolderText;
+        private VisualElement mUnityTextElement;
 
         /// <summary>
         /// Set focus on create flag
@@ -141,6 +138,9 @@ namespace Mopsicus.AG.Modified
         /// Last field position cache
         /// </summary>
         private Rect mLastRect;
+
+        private bool mIsAwaitingSettledLayout;
+        private float mLastMeasuredFontSize;
 
         /// <summary>
         /// Current config
@@ -222,6 +222,8 @@ namespace Mopsicus.AG.Modified
         /// Ready event
         /// </summary>
         const string cREADY = "READY";
+
+        private const float cSettledFontSizeTolerance = 0.5f;
 
         
         
@@ -317,7 +319,7 @@ namespace Mopsicus.AG.Modified
             
             foreach (var child in mUnityTextInput.Children())
             {
-                mPlaceHolderText = child;
+                mUnityTextElement = child;
             }
             
             VisualElement current = this;
@@ -345,20 +347,8 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void InitializeOnNextFrame()
         {
-            // If geometry is already resolved, set up immediately
-            if (this.resolvedStyle.width > 0 && this.resolvedStyle.height > 0)
-            {
-                SetupNativeEdit();
-                return;
-            }
-
-            this.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-        }
-
-        private void OnGeometryChanged(GeometryChangedEvent evt)
-        {
-            this.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-            SetupNativeEdit();
+            mLastMeasuredFontSize = 0f;
+            mIsAwaitingSettledLayout = true;
         }
 
         private void SetupNativeEdit()
@@ -369,6 +359,22 @@ namespace Mopsicus.AG.Modified
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
 #endif
+        }
+
+        private void SetupNativeEditOnceSettled()
+        {
+            if (mInputObject.panel == null || !(mInputObject.resolvedStyle.height > 0f))
+                return;
+
+            var fontSize = GetNativeFontSize();
+            if (Mathf.Abs(fontSize - mLastMeasuredFontSize) > cSettledFontSizeTolerance)
+            {
+                mLastMeasuredFontSize = fontSize;
+                return;
+            }
+
+            mIsAwaitingSettledLayout = false;
+            SetupNativeEdit();
         }
         
         //***************************************************************************
@@ -385,6 +391,9 @@ namespace Mopsicus.AG.Modified
 #if UNITY_ANDROID && !UNITY_EDITOR
             this.UpdateForceKeyeventForAndroid ();
 #endif
+            if (mIsAwaitingSettledLayout)
+                SetupNativeEditOnceSettled();
+
             if (mIsMobileInputCreated && this.mInputObject != null) {
 #if !UNITY_EDITOR
                 int touchCount = Input.touchCount;
@@ -423,21 +432,40 @@ namespace Mopsicus.AG.Modified
         {
             if (element == null)
                 throw new ArgumentNullException(nameof(element));
-            
-            Rect worldRect = element.worldBound;
-            
+
+            return GetScreenRectFromWorldRect(element.worldBound);
+        }
+
+        private Rect GetScreenRectFromWorldRect(Rect worldRect)
+        {
             worldRect.x *= pRatioX;
             worldRect.width *= pRatioX;
             worldRect.y *= pRatioY;
             worldRect.height *= pRatioY;
-            
-            float x = worldRect.x;
-            float y = worldRect.y;
-            float width = worldRect.width;
-            float height = worldRect.height;
-            
-            Rect rect = new Rect(x, y, width, height);
-            return rect;
+            return worldRect;
+        }
+
+        private Rect GetNativeTextRect()
+        {
+            var textArea = mUnityTextInput.contentRect;
+            if (mUnityTextElement != null)
+            {
+                var textStyle = mUnityTextElement.resolvedStyle;
+                textArea.xMin += textStyle.marginLeft + textStyle.borderLeftWidth + textStyle.paddingLeft;
+                textArea.xMax -= textStyle.marginRight + textStyle.borderRightWidth + textStyle.paddingRight;
+            }
+
+            return GetScreenRectFromWorldRect(mUnityTextInput.LocalToWorld(textArea));
+        }
+
+        private float GetNativeFontSize()
+        {
+            var layoutHeight = mInputObject.resolvedStyle.height;
+            if (!(layoutHeight > 0f))
+                return mConfig.FontSize;
+
+            Rect rect = GetScreenRectFromVisualElement(mInputObject);
+            return mInputObject.resolvedStyle.fontSize * rect.height / layoutHeight;
         }
         
         
@@ -461,15 +489,13 @@ namespace Mopsicus.AG.Modified
             mConfig.Placeholder = string.IsNullOrEmpty(placeholderText)
                 ? ""
                 : placeholderText;
-            mConfig.PlaceholderColor = mPlaceHolderText != null
-                ? mPlaceHolderText.resolvedStyle.color
+            mConfig.PlaceholderColor = mUnityTextElement != null
+                ? mUnityTextElement.resolvedStyle.color
                 : new Color(0.5f, 0.5f, 0.5f, 1.0f);
             
             mConfig.CharacterLimit = mInputObject.maxLength;
             
-            Rect rect = GetScreenRectFromVisualElement(mInputObject);
-            float ratio = rect.height / mInputObject.resolvedStyle.height;
-            mConfig.FontSize = mInputObject.resolvedStyle.fontSize * ratio;
+            mConfig.FontSize = GetNativeFontSize();
 
             mConfig.TextColor = mInputObject.resolvedStyle.color;
             mConfig.Align = mInputObject.resolvedStyle.unityTextAlign.ToString();
@@ -497,7 +523,7 @@ namespace Mopsicus.AG.Modified
         /// </summary>
         private void CreateNativeEdit()
         {
-            Rect rect = GetScreenRectFromVisualElement(mUnityTextInput);
+            Rect rect = GetNativeTextRect();
 
             JsonObject data = new JsonObject();
             data["msg"] = cCREATE;
@@ -690,7 +716,7 @@ namespace Mopsicus.AG.Modified
         /// <param name="inputRect">RectTransform</param>
         public void SetRectNative()
         {
-            Rect rect = GetScreenRectFromVisualElement(mUnityTextInput);
+            Rect rect = GetNativeTextRect();
             if (RectApproximatelyEqual(mLastRect, rect))
             {
                 return;
@@ -703,7 +729,7 @@ namespace Mopsicus.AG.Modified
             data["y"] = InvariantCultureString(rect.y / Screen.height);
             data["width"] = InvariantCultureString(rect.width / Screen.width);
             data["height"] = InvariantCultureString(rect.height / Screen.height);
-            
+
             this.Execute(data);
         }
 
@@ -877,6 +903,8 @@ namespace Mopsicus.AG.Modified
         
         private void OnDetachFromPanel(DetachFromPanelEvent evt)
         {
+            mIsAwaitingSettledLayout = false;
+
             if (mIsMobileInputCreated) {
                 this.SetFocus (false);
                 this.SetVisible (false);
@@ -899,7 +927,24 @@ namespace Mopsicus.AG.Modified
         {
             mForceBehindReplacementText = replacementLabel;
         }
-        
+
+        public void ColourUnityTextAsNative(bool isPlaceholder)
+        {
+            if (mUnityTextInput == null)
+                return;
+
+            if (!mIsMobileInputCreated)
+            {
+                mUnityTextInput.style.color = StyleKeyword.Null;
+                return;
+            }
+
+            var textColour = mConfig.TextColor;
+            mUnityTextInput.style.color = isPlaceholder
+                ? mConfig.PlaceholderColor
+                : new Color(textColour.r, textColour.g, textColour.b, 1f);
+        }
+
         /// <summary>
         /// On iOS, editViews are created in the native plugin and added to the main view
         /// controller (i.e. Unity's game view). This means that UITextFields are always
