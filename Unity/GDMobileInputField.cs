@@ -450,9 +450,7 @@ namespace Mopsicus.AG.Modified
         {
             var textArea = mUnityTextInput.contentRect;
             var fieldArea = mInputObject.contentRect;
-            var fieldMin = mUnityTextInput.WorldToLocal(mInputObject.LocalToWorld(fieldArea.min));
             var fieldMax = mUnityTextInput.WorldToLocal(mInputObject.LocalToWorld(fieldArea.max));
-            textArea.xMin = Mathf.Min(textArea.xMin, fieldMin.x);
             textArea.xMax = Mathf.Max(textArea.xMax, fieldMax.x);
 
             if (mUnityTextElement != null)
