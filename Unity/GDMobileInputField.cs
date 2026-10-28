@@ -399,9 +399,10 @@ namespace Mopsicus.AG.Modified
                 int touchCount = Input.touchCount;
                 if (touchCount > 0)
                 {
-                    Rect inputRect = GetScreenRectFromVisualElement(this.mUnityTextInput);
+                    Rect inputRect = GetScreenRectFromVisualElement(this);
                     for (int i = 0; i < touchCount; i++) {
                         Vector2 touchPos = Input.GetTouch(i).position;
+                        touchPos.y = Screen.height - touchPos.y;
                         TouchPhase phase = Input.GetTouch(i).phase;
                         bool isInside = inputRect.Contains(touchPos);
                         
@@ -448,6 +449,12 @@ namespace Mopsicus.AG.Modified
         private Rect GetNativeTextRect()
         {
             var textArea = mUnityTextInput.contentRect;
+            var fieldArea = mInputObject.contentRect;
+            var fieldMin = mUnityTextInput.WorldToLocal(mInputObject.LocalToWorld(fieldArea.min));
+            var fieldMax = mUnityTextInput.WorldToLocal(mInputObject.LocalToWorld(fieldArea.max));
+            textArea.xMin = Mathf.Min(textArea.xMin, fieldMin.x);
+            textArea.xMax = Mathf.Max(textArea.xMax, fieldMax.x);
+
             if (mUnityTextElement != null)
             {
                 var textStyle = mUnityTextElement.resolvedStyle;
