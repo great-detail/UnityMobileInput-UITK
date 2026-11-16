@@ -291,6 +291,7 @@ BOOL multiline;
     multiline = [[data valueForKey:@"multiline"] boolValue];
     BOOL autoCorrection = NO;
     BOOL password = NO;
+    BOOL capitaliseWords = NO;
     NSString *inputType = [data valueForKey:@"input_type"];
     NSString *keyboardType = [data valueForKey:@"keyboard_type"];
     UIKeyboardType keyType = UIKeyboardTypeDefault;
@@ -303,7 +304,7 @@ BOOL multiline;
     } else if ([contentType isEqualToString:@"Alphanumeric"]) {
         keyType = UIKeyboardTypeAlphabet;
     } else if ([contentType isEqualToString:@"Name"]) {
-        keyType = UIKeyboardTypeNamePhonePad;
+        capitaliseWords = YES;
     } else if ([contentType isEqualToString:@"EmailAddress"]) {
         keyType = UIKeyboardTypeEmailAddress;
     } else if ([contentType isEqualToString:@"Password"]) {
@@ -433,6 +434,8 @@ BOOL multiline;
         textView.delegate = self;
         if (keyType == UIKeyboardTypeEmailAddress) {
             textView.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        } else if (capitaliseWords) {
+            textView.autocapitalizationType = UITextAutocapitalizationTypeWords;
         }
         [textView setSecureTextEntry:password];
         if (keyboardDoneButtonView != nil) {
@@ -462,6 +465,8 @@ BOOL multiline;
         textField.delegate = self;
         if (keyType == UIKeyboardTypeEmailAddress) {
             textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        } else if (capitaliseWords) {
+            textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
         }
         [textField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
         [textField addTarget:self action:@selector(textFieldActive:) forControlEvents:UIControlEventEditingDidBegin];
