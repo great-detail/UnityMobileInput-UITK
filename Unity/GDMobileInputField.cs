@@ -140,6 +140,7 @@ namespace Mopsicus.AG.Modified
         private Rect mLastRect;
 
         private bool mIsAwaitingSettledLayout;
+        private bool mIsAwaitingSettledScreenChange;
         private float mLastMeasuredFontSize;
 
         /// <summary>
@@ -322,16 +323,8 @@ namespace Mopsicus.AG.Modified
                 mUnityTextElement = child;
             }
             
-            VisualElement current = this;
-            while (current.hierarchy.parent != null)
-            {
-                current = current.hierarchy.parent;
-            }
+            UpdateScreenRatios();
 
-            var root = current;
-            pRatioX = Screen.width / root.resolvedStyle.width;
-            pRatioY = Screen.height / root.resolvedStyle.height;
-      
             mInputObject.RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
             
             OnAttachToPanel();
@@ -358,6 +351,7 @@ namespace Mopsicus.AG.Modified
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             this.CreateNativeEdit();
             this.SetTextNative(this.mInputObject.text);
+            pVisible = true;
 #endif
         }
 
@@ -376,7 +370,24 @@ namespace Mopsicus.AG.Modified
             mIsAwaitingSettledLayout = false;
             SetupNativeEdit();
         }
-        
+
+        private void RefreshNativeEditOnceSettled()
+        {
+            var fontSize = GetNativeFontSize();
+            if (Mathf.Abs(fontSize - mLastMeasuredFontSize) > cSettledFontSizeTolerance)
+            {
+                mLastMeasuredFontSize = fontSize;
+                return;
+            }
+
+            mIsAwaitingSettledScreenChange = false;
+            if (Mathf.Abs(fontSize - mConfig.FontSize) <= cSettledFontSizeTolerance)
+                return;
+
+            mConfig.FontSize = fontSize;
+            RecreateNativeEdit();
+        }
+
         //***************************************************************************
         // Monobehaviours
         //***************************************************************************
@@ -391,10 +402,16 @@ namespace Mopsicus.AG.Modified
 #if UNITY_ANDROID && !UNITY_EDITOR
             this.UpdateForceKeyeventForAndroid ();
 #endif
+            if (UpdateScreenRatios())
+                mIsAwaitingSettledScreenChange = true;
+
             if (mIsAwaitingSettledLayout)
                 SetupNativeEditOnceSettled();
 
             if (mIsMobileInputCreated && this.mInputObject != null) {
+                if (mIsAwaitingSettledScreenChange && !mIsAwaitingSettledLayout)
+                    RefreshNativeEditOnceSettled();
+
 #if !UNITY_EDITOR
                 int touchCount = Input.touchCount;
                 if (touchCount > 0)
@@ -435,6 +452,26 @@ namespace Mopsicus.AG.Modified
                 throw new ArgumentNullException(nameof(element));
 
             return GetScreenRectFromWorldRect(element.worldBound);
+        }
+
+        private bool UpdateScreenRatios()
+        {
+            var root = panel?.visualTree;
+            if (root == null)
+                return false;
+
+            var rootStyle = root.resolvedStyle;
+            if (!(rootStyle.width > 0f) || !(rootStyle.height > 0f))
+                return false;
+
+            var ratioX = Screen.width / rootStyle.width;
+            var ratioY = Screen.height / rootStyle.height;
+            if (Mathf.Approximately(ratioX, pRatioX) && Mathf.Approximately(ratioY, pRatioY))
+                return false;
+
+            pRatioX = ratioX;
+            pRatioY = ratioY;
+            return true;
         }
 
         private Rect GetScreenRectFromWorldRect(Rect worldRect)
@@ -599,12 +636,19 @@ namespace Mopsicus.AG.Modified
             if (mIsMobileInputCreated && mInputObject != null)
             {
                 // We need to re-create the native view to update the input type (Password/Standard)
-                RemoveNative();
                 PrepareNativeEdit();
-                CreateNativeEdit();
-                SetTextNative(mInputObject.text);
+                RecreateNativeEdit();
             }
 #endif
+        }
+
+        private void RecreateNativeEdit()
+        {
+            RemoveNative();
+            CreateNativeEdit();
+            SetTextNative(mInputObject.text);
+            if (!pVisible)
+                SetVisible(false);
         }
         
         
