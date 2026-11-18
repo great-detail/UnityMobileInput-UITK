@@ -743,7 +743,7 @@ namespace Mopsicus.AG.Modified
         {
             JsonObject data = new JsonObject();
             data["msg"] = cSET_TEXT;
-            data["text"] = text;
+            data["text"] = text ?? "";
             this.Execute(data);
         }
 
